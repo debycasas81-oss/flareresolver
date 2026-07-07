@@ -4,7 +4,7 @@ import multiprocessing
 import os
 import platform
 import signal
-from subprocess import PIPE
+from subprocess import DEVNULL
 from subprocess import Popen
 import sys
 
@@ -58,7 +58,7 @@ def _start_detached(executable, *args, writer: multiprocessing.Pipe = None):
         kwargs.update(start_new_session=True)
 
     # run
-    p = Popen([executable, *args], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
+    p = Popen([executable, *args], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL, **kwargs)
 
     # send pid to pipe
     writer.send(p.pid)
