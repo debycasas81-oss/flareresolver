@@ -27,6 +27,8 @@ RUN dpkg -i /libgl1-mesa-dri.deb \
     && rm -f /usr/lib/x86_64-linux-gnu/mfx/* \
     && mv /usr/bin/chromedriver /app/chromedriver || true
 
+ENV CHROME_BIN=/usr/lib/chromium/chromium
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
