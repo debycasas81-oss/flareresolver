@@ -202,6 +202,7 @@ def get_webdriver(proxy: dict = None) -> WebDriver:
         driver = uc2.Chrome(options=options, browser_executable_path=browser_executable_path,
                            driver_executable_path=driver_exe_path, version_main=version_main,
                            windows_headless=windows_headless, headless=chrome_headless,
+                           use_subprocess=True,
                            seleniumwire_options=proxy_options)
     except Exception as e:
         logging.error("Error starting Chrome: %s" % e)
