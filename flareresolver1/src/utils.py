@@ -167,13 +167,18 @@ def get_webdriver(proxy: dict = None) -> WebDriver:
         }
 
     # note: headless mode is detected (headless = True)
-    # we launch the browser in head-full mode with the window hidden
+    # On Linux we prefer a hidden visible browser under Xvfb instead of Chrome's
+    # headless=new mode, which has been unstable in recent Chromium releases.
     windows_headless = False
+    chrome_headless = False
     if get_config_headless():
         if os.name == 'nt':
             windows_headless = True
+            chrome_headless = True
         else:
+            logging.debug("HEADLESS=true on Linux: using Xvfb with visible Chrome instead of headless=new")
             start_xvfb_display()
+            chrome_headless = False
     # For normal headless mode:
     # options.add_argument('--headless')
 
@@ -196,7 +201,7 @@ def get_webdriver(proxy: dict = None) -> WebDriver:
     try:
         driver = uc2.Chrome(options=options, browser_executable_path=browser_executable_path,
                            driver_executable_path=driver_exe_path, version_main=version_main,
-                           windows_headless=windows_headless, headless=get_config_headless(),
+                           windows_headless=windows_headless, headless=chrome_headless,
                            seleniumwire_options=proxy_options)
     except Exception as e:
         logging.error("Error starting Chrome: %s" % e)
