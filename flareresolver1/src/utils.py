@@ -138,6 +138,7 @@ def get_webdriver(proxy: dict = None) -> WebDriver:
     # todo: this param shows a warning in chrome head-full
     options.add_argument('--disable-setuid-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')
     # this option removes the zygote sandbox (it seems that the resolution is a bit faster)
     options.add_argument('--no-zygote')
     # attempt to fix Docker ARM32 build
