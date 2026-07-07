@@ -34,6 +34,28 @@ def get_config_disable_media() -> bool:
     return os.environ.get('DISABLE_MEDIA', 'false').lower() == 'true'
 
 
+def _is_executable_file(path: str | None) -> bool:
+    return bool(path) and os.path.isfile(path) and os.access(path, os.X_OK)
+
+
+def _iter_preferred_chrome_paths():
+    # Allow Railway or local deployments to override the browser binary.
+    for env_name in ('CHROME_BIN', 'CHROMIUM_BIN', 'CHROME_PATH'):
+        env_path = os.environ.get(env_name)
+        if env_path:
+            yield env_path
+
+    # Debian/Ubuntu expose /usr/bin/chromium as a wrapper; prefer the real binary
+    # when it exists because newer Chromium releases have had wrapper-launch bugs.
+    if os.name != 'nt':
+        for candidate in (
+            '/usr/lib/chromium/chromium',
+            '/usr/lib/chromium-browser/chromium-browser',
+            '/usr/lib/chromium/chrome',
+        ):
+            yield candidate
+
+
 def _build_proxy_address(proxy: dict) -> str | None:
     if not proxy:
         return None
@@ -202,6 +224,13 @@ def get_chrome_exe_path() -> str:
     global CHROME_EXE_PATH
     if CHROME_EXE_PATH is not None:
         return CHROME_EXE_PATH
+
+    # explicit env override or distro-provided browser binaries
+    for chrome_path in _iter_preferred_chrome_paths():
+        if _is_executable_file(chrome_path):
+            CHROME_EXE_PATH = chrome_path
+            return CHROME_EXE_PATH
+
     # linux pyinstaller bundle
     chrome_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chrome', "chrome")
     if os.path.exists(chrome_path):
@@ -210,6 +239,7 @@ def get_chrome_exe_path() -> str:
                             f'Please, extract the archive with "tar xzf <file.tar.gz>".')
         CHROME_EXE_PATH = chrome_path
         return CHROME_EXE_PATH
+
     # windows pyinstaller bundle
     chrome_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chrome', "chrome.exe")
     if os.path.exists(chrome_path):
